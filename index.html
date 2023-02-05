@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: black;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      canvas {
+        background-color: white;
+        border: 1px solid black;
+        width: 80%;
+        height: 80%;
+        max-width: 500px;
+        max-height: 500px;
+      }
+      #color-palette {
+        display: flex;
+        flex-wrap: wrap;
+        width: 80%;
+        margin-top: 20px;
+        max-width: 500px;
+      }
+      #color-palette button {
+        width: 42px;
+        height: 42px;
+        border: 1px solid gray;
+        float: left;
+        margin: 10px;
+      }
+      #color-palette button:hover {
+        box-shadow: 0 0 20px cyan;
+      }
+      #color-palette button.selected {
+        width: 36px;
+        height: 36px;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <div id="color-palette"></div>
+    <div id="token-index" style="color: yellow; font-family: monospace; padding: 10px; font-size: 1.2em;"></div>
+    <button id="mint-button">Mint</button>    
+    <script src="app.js"></script>
+  </body>
+</html>
