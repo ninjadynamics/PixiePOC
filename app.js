@@ -72,11 +72,12 @@ function draw(event) {
   if (event.button === 0) {
     ctx.fillStyle = currentColor;
     ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+    piksee[y][x] = currentIndex;
   } else if (event.button === 2) {
     ctx.fillStyle = "black";
     ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+    piksee[y][x] = 0;
   }
-  piksee[y][x] = currentIndex;
 }
 
 // function to encode grid array into bit array
