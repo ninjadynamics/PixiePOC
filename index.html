@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>Piksee NFT</title>
     <style>
       body {
         background-color: black;
@@ -17,6 +18,24 @@
         max-width: 500px;
         max-height: 500px;
       }
+      textarea {
+        white-space: normal;
+        text-align: justify;
+        text-align-last: center;
+        color: yellow;
+        background: black;
+        width: 60%;
+        height: 1.5em;
+        font-family: monospace;
+        padding: 10px;
+        font-size: 1.2em;
+        border: none;
+        overflow: auto;
+        outline: none;
+        -webkit-box-shadow: none;
+        box-shadow: none;
+        resize: none;
+      }      
       #color-palette {
         display: flex;
         flex-wrap: wrap;
@@ -41,10 +60,15 @@
     </style>
   </head>
   <body>
+    <p style="text-align: center;"><img src="logo.png" alt="Logo"></p>
     <canvas id="canvas"></canvas>
     <div id="color-palette"></div>
-    <div id="token-index" style="color: yellow; font-family: monospace; padding: 10px; font-size: 1.2em;"></div>
-    <button id="mint-button">Mint</button>    
+    <textarea id="token-index"></textarea>
+    <div>
+      <button id="mint-button" style="padding: 0.6em;">Mint</button>
+      <button id="load-button" style="padding: 0.6em;">Load</button>
+      <button id="clear-button" style="padding: 0.6em;">Clear</button>
+    </div>
     <script src="app.js"></script>
   </body>
 </html>

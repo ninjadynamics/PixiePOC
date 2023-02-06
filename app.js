@@ -36,11 +36,11 @@ var currentColor = "red";
 var currentIndex = 12;
 
 // 8x8 grid array
-var grid = [];
+var piksee = [];
 for (var i = 0; i < 8; i++) {
-  grid[i] = [];
+  piksee[i] = [];
   for (var j = 0; j < 8; j++) {
-    grid[i][j] = 0;
+    piksee[i][j] = 0;
   }
 }
 
@@ -76,7 +76,7 @@ function draw(event) {
     ctx.fillStyle = "black";
     ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
   }
-  grid[y][x] = currentIndex;
+  piksee[y][x] = currentIndex;
 }
 
 // function to encode grid array into bit array
@@ -127,13 +127,36 @@ function isEqual(a, b) {
 }
 
 function mint() {
-  var gridArray = encode(grid);
-  return "NFT Index: " + bitArrayToBigNumber(gridArray).toString().padStart(78, '0');
+  var grid = encode(piksee);
+  return bitArrayToBigNumber(grid).toString().padStart(78, '0');
+}
+
+function load(bigNum) {
+  bitArray = bigNumberToBitArray(bigNum);
+  grid = decode(bitArray);
+  var canvasRect = canvas.getBoundingClientRect();
+  for (var y = 0; y < 8; y++) {    
+    for (var x = 0; x < 8; x++) {      
+      ctx.fillStyle = colorPalette[grid[y][x]];
+      ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+      piksee[y][x] = grid[y][x];
+    }
+  }
 }
 
 document.getElementById("mint-button").addEventListener("click", function() {
   var tokenIndex = document.getElementById("token-index");
-  tokenIndex.innerHTML = mint();
+  tokenIndex.value = mint();
+});
+
+document.getElementById("load-button").addEventListener("click", function() {
+  var tokenIndex = document.getElementById("token-index");
+  load(bigNum = BigInt(tokenIndex.value));
+});
+
+document.getElementById("clear-button").addEventListener("click", function() {
+  var tokenIndex = document.getElementById("token-index");
+  load(bigNum = BigInt(0));
 });
 
 // disable right-click
@@ -144,6 +167,8 @@ document.addEventListener("contextmenu", function(event) {
 // add event listeners for drawing
 canvas.addEventListener("mousedown", draw);
 
+// clear text area
+document.getElementById("token-index").value = Number(0).toString().padStart(78, '0');;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // Test
