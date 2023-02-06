@@ -1,14 +1,15 @@
 // set up canvas and grid
+var drawing = 0;
 var canvas = document.getElementById("canvas");
 var ctx = canvas.getContext("2d");
 
 // set canvas size based on screen aspect ratio
 if (screen.width > screen.height) {
-  canvas.width = screen.width / 4;
-  canvas.height = screen.width / 4;
+    canvas.width = screen.width / 4;
+    canvas.height = screen.width / 4;
 } else {
-  canvas.width = screen.width / 3;
-  canvas.height = screen.width / 3;
+    canvas.width = screen.width / 3;
+    canvas.height = screen.width / 3;
 }
 
 // calculate size of each individual cell
@@ -16,13 +17,13 @@ var cellSize = canvas.width / 8;
 
 // create grid of 8x8 squares
 for (var i = 0; i < canvas.width; i += cellSize) {
-  for (var j = 0; j < canvas.height; j += cellSize) {
-    ctx.fillStyle = "black";
-    ctx.fillRect(i, j, cellSize, cellSize);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "white";
-    ctx.strokeRect(i, j, cellSize, cellSize);
-  }
+    for (var j = 0; j < canvas.height; j += cellSize) {
+        ctx.fillStyle = "black";
+        ctx.fillRect(i, j, cellSize, cellSize);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "white";
+        ctx.strokeRect(i, j, cellSize, cellSize);
+    }
 }
 
 // create color palette
@@ -38,78 +39,98 @@ var currentIndex = 12;
 // 8x8 grid array
 var piksee = [];
 for (var i = 0; i < 8; i++) {
-  piksee[i] = [];
-  for (var j = 0; j < 8; j++) {
-    piksee[i][j] = 0;
-  }
+    piksee[i] = [];
+    for (var j = 0; j < 8; j++) {
+        piksee[i][j] = 0;
+    }
 }
 
 // function to change color on click
 function changeColor(event) {
-  var color = event.target.style.backgroundColor;
-  currentColor = color;
-  currentIndex = colorPalette.indexOf(color);
+    var color = event.target.style.backgroundColor;
+    currentColor = color;
+    currentIndex = colorPalette.indexOf(color);
 }
 
 // create color palette buttons
 for (var i = 0; i < colorPalette.length; i++) {
-  var button = document.createElement("button");
-  button.style.backgroundColor = colorPalette[i];
-  button.onclick = changeColor;
-  document.getElementById("color-palette").appendChild(button);
+    var button = document.createElement("button");
+    button.style.backgroundColor = colorPalette[i];
+    button.onclick = changeColor;
+    document.getElementById("color-palette").appendChild(button);
 }
 
 // function to draw on canvas
-function draw(event) {
-  var x = event.clientX;
-  var y = event.clientY;
-  var canvasRect = canvas.getBoundingClientRect();
-  x -= canvasRect.left;
-  y -= canvasRect.top;
-  x = Math.floor(x / cellSize);
-  y = Math.floor(y / cellSize);
-  
-  if (event.button === 0) {
-    ctx.fillStyle = currentColor;
-    ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
-    piksee[y][x] = currentIndex;
-  } else if (event.button === 2) {
-    ctx.fillStyle = "black";
-    ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
-    piksee[y][x] = 0;
-  }
+function draw(x, y, mode) {
+    // find which square to fill
+    var canvasRect = canvas.getBoundingClientRect();
+    x -= canvasRect.left;
+    y -= canvasRect.top;
+    x = Math.floor(x / cellSize);
+    y = Math.floor(y / cellSize);
+    // prevent drawing outside the grid
+    if (x < 0 || x > 7 || y < 0 || y > 7 ) return;
+    // draw / erase
+    if (drawing === 1) {
+        ctx.fillStyle = currentColor;
+        ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+        piksee[y][x] = currentIndex;
+    } else if (drawing === 2) {
+        ctx.fillStyle = "black";
+        ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+        piksee[y][x] = 0;
+    }
+}
+
+function startDrawing(event) {
+    var x = event.clientX;
+    var y = event.clientY;
+    var btn = event.button;
+    if (btn && btn != 2) return;
+    drawing = btn ? 2 : 1;
+    draw(x, y);
+}
+
+function keepDrawing(event) {
+    var x = event.clientX;
+    var y = event.clientY;
+    if (drawing) draw(x, y);
+}
+
+function stopDrawing() {
+    drawing = null;
 }
 
 // function to encode grid array into bit array
 function encode(grid) {
-  var bitArray = [];
-  for (var i = 0; i < grid.length; i++) {
-    for (var j = 0; j < grid[0].length; j++) {
-      var value = grid[i][j];
-      var binary = value.toString(2).padStart(4, "0");
-      for (var k = 0; k < binary.length; k++) {
-        bitArray.push(parseInt(binary[k]));
-      }
+    var bitArray = [];
+    for (var i = 0; i < grid.length; i++) {
+        for (var j = 0; j < grid[0].length; j++) {
+            var value = grid[i][j];
+            var binary = value.toString(2).padStart(4, "0");
+            for (var k = 0; k < binary.length; k++) {
+                bitArray.push(parseInt(binary[k]));
+            }
+        }
     }
-  }
-  return bitArray;
+    return bitArray;
 }
 
 // function to decode bit array into grid array
 function decode(bitArray) {
-  var grid = [];
-  var index = 0;
-  for (var i = 0; i < 8; i++) {
-    grid[i] = [];
-    for (var j = 0; j < 8; j++) {
-      var value = 0;
-      for (var k = 0; k < 4; k++) {
-        value += bitArray[index++] * Math.pow(2, 3 - k);
-      }
-      grid[i][j] = value;
+    var grid = [];
+    var index = 0;
+    for (var i = 0; i < 8; i++) {
+        grid[i] = [];
+        for (var j = 0; j < 8; j++) {
+            var value = 0;
+            for (var k = 0; k < 4; k++) {
+                value += bitArray[index++] * Math.pow(2, 3 - k);
+            }
+            grid[i][j] = value;
+        }
     }
-  }
-  return grid;
+    return grid;
 }
 
 // function to encode a 256 bit array into a big number
@@ -128,45 +149,50 @@ function isEqual(a, b) {
 }
 
 function mint() {
-  var grid = encode(piksee);
-  return bitArrayToBigNumber(grid).toString().padStart(78, '0');
+    var grid = encode(piksee);
+    return bitArrayToBigNumber(grid).toString().padStart(78, '0');
 }
 
 function load(bigNum) {
-  bitArray = bigNumberToBitArray(bigNum);
-  grid = decode(bitArray);
-  var canvasRect = canvas.getBoundingClientRect();
-  for (var y = 0; y < 8; y++) {    
-    for (var x = 0; x < 8; x++) {      
-      ctx.fillStyle = colorPalette[grid[y][x]];
-      ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
-      piksee[y][x] = grid[y][x];
+    bitArray = bigNumberToBitArray(bigNum);
+    grid = decode(bitArray);
+    var canvasRect = canvas.getBoundingClientRect();
+    for (var y = 0; y < 8; y++) {
+        for (var x = 0; x < 8; x++) {
+            ctx.fillStyle = colorPalette[grid[y][x]];
+            ctx.fillRect(x * cellSize + 1, y * cellSize + 1, cellSize - 2, cellSize - 2);
+            piksee[y][x] = grid[y][x];
+        }
     }
-  }
 }
 
 document.getElementById("mint-button").addEventListener("click", function() {
-  var tokenIndex = document.getElementById("token-index");
-  tokenIndex.value = mint();
+    var tokenIndex = document.getElementById("token-index");
+    tokenIndex.value = mint();
 });
 
 document.getElementById("load-button").addEventListener("click", function() {
-  var tokenIndex = document.getElementById("token-index");
-  load(bigNum = BigInt(tokenIndex.value));
+    var tokenIndex = document.getElementById("token-index");
+    load(bigNum = BigInt(tokenIndex.value));
 });
 
 document.getElementById("clear-button").addEventListener("click", function() {
-  var tokenIndex = document.getElementById("token-index");
-  load(bigNum = BigInt(0));
+    var tokenIndex = document.getElementById("token-index");
+    load(bigNum = BigInt(0));
 });
 
 // disable right-click
 document.addEventListener("contextmenu", function(event) {
-  event.preventDefault();
+    event.preventDefault();
 }, false);
 
 // add event listeners for drawing
-canvas.addEventListener("mousedown", draw);
+canvas.addEventListener("mousedown", startDrawing);
+canvas.addEventListener("mousemove", keepDrawing);
+canvas.addEventListener("mouseup", stopDrawing);
+canvas.addEventListener("touchstart", startDrawing);
+canvas.addEventListener("touchmove", keepDrawing);
+canvas.addEventListener("touchend", stopDrawing);
 
 // clear text area
 document.getElementById("token-index").value = Number(0).toString().padStart(78, '0');;
@@ -174,13 +200,13 @@ document.getElementById("token-index").value = Number(0).toString().padStart(78,
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // Test
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-function test() {    
+function test() {
     bitArray = encode(grid);
     bigNum = bitArrayToBigNumber(bitArray);
-    
+
     bitArray2 = bigNumberToBitArray(bigNum);
     grid2 = decode(bitArray2);
-    
+
     return isEqual(grid, grid2);
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
